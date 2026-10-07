@@ -2,7 +2,7 @@ import requests
 
 # --- TELEGRAM AYARLARI ---
 TELEGRAM_TOKEN = "8950898533:AAEU-FsEvHt5qUIAzXMwa-hCBWZMTGcDI_Y"
-CHAT_ID = "853083506"
+CHAT_ID = "-1003795173448"
 
 
 def telegram_mesaj_gonder(mesaj):
