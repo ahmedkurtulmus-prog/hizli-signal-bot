@@ -15,33 +15,36 @@ def telegram_mesaj_gonder(mesaj):
 
 
 def hizli_tarama():
-  print("Kaptan, engelsiz saf API taraması başlatıldı...")
+  print("Kaptan, korumalı saf API taraması başlatıldı...")
   try:
-    # Doğrudan Binance Futures halka açık fiyat API adresi (IP engeline takılmaz)
     url = "https://fapi.binance.com/fapi/v1/ticker/24hr"
     response = requests.get(url, timeout=10)
     data = response.json()
 
-    # İstediğimiz coinler
+    # Gelen verinin liste olup olmadığını kontrol ediyoruz
+    if not isinstance(data, list):
+      print(f"Beklenmeyen veri formatı: {data}")
+      return
+
     hedef_coinler = ["BTCUSDT", "ETHUSDT", "SOLUSDT"]
 
     for item in data:
-      symbol = item["symbol"]
+      symbol = item.get("symbol")
       if symbol in hedef_coinler:
         coin_adi = symbol.replace("USDT", "")
-        fiyat = float(item["lastPrice"])
-        degisim = float(item["priceChangePercent"])
+        fiyat = float(item.get("lastPrice", 0))
+        degisim = float(item.get("priceChangePercent", 0))
 
         mesaj = (
-            f"⚡ *SAF API TEST SİNYALİ* ⚡\n\n"
+            f"⚡ *KORUMALI SAF API SİNYALİ* ⚡\n\n"
             f"🪙 *Coin:* `{coin_adi}/USDT`\n"
             f"💰 *Fiyat:* `{fiyat}`\n"
             f"📊 *24s Değişim:* `% {degisim}`\n\n"
-            f"Kaptan, engel mangep kalmadı, hatlar tertemiz!"
+            f"Kaptan, veriler tertemiz çekildi, sistem tam gaz!"
         )
         telegram_mesaj_gonder(mesaj)
 
-    print("Tüm saf API test mesajları başarıyla gönderildi!")
+    print("Tüm korumalı test mesajları başarıyla gönderildi!")
 
   except Exception as e:
     print(f"Hata detayı: {e}")
