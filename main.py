@@ -1,4 +1,3 @@
-import ccxt
 import requests
 
 # --- TELEGRAM AYARLARI ---
@@ -15,45 +14,38 @@ def telegram_mesaj_gonder(mesaj):
     print(f"Telegram mesaj hatası: {e}")
 
 
-# --- ALTERNATİF BİNANCE BAĞLANTISI (IP Engelini Aşar) ---
-exchange = ccxt.binance({
-    'options': {'defaultType': 'future'},
-    'enableRateLimit': True,
-    'urls': {
-        'api': {
-            'public': 'https://fapi.binance.com/fapi/v1',
-            'private': 'https://fapi.binance.com/fapi/v1',
-        }
-    },
-})
-
-
 def hizli_tarama():
-  print('Kaptan, engelsiz hızlı sinyal botu tarıyor...')
+  print("Kaptan, engelsiz saf API taraması başlatıldı...")
   try:
-    # Test için ana pariteler
-    coinler = ['BTC/USDT:USDT', 'ETH/USDT:USDT', 'SOL/USDT:USDT']
+    # Doğrudan Binance Futures halka açık fiyat API adresi (IP engeline takılmaz)
+    url = "https://fapi.binance.com/fapi/v1/ticker/24hr"
+    response = requests.get(url, timeout=10)
+    data = response.json()
 
-    for symbol in coinler:
-      ticker = exchange.fetch_ticker(symbol)
-      coin_adi = symbol.split('/')[0]
-      fiyat = ticker['last']
-      degisim = ticker['percentage']
+    # İstediğimiz coinler
+    hedef_coinler = ["BTCUSDT", "ETHUSDT", "SOLUSDT"]
 
-      mesaj = (
-          f"⚡ *ENGELSİZ HIZLI TEST SİNYALİ* ⚡\n\n"
-          f"🪙 *Coin:* `{coin_adi}/USDT`\n"
-          f"💰 *Fiyat:* `{fiyat}`\n"
-          f"📊 *24s Değişim:* `% {degisim}`\n\n"
-          f"Kaptan, IP engeli aşıldı, hatlar bomba gibi!"
-      )
-      telegram_mesaj_gonder(mesaj)
+    for item in data:
+      symbol = item["symbol"]
+      if symbol in hedef_coinler:
+        coin_adi = symbol.replace("USDT", "")
+        fiyat = float(item["lastPrice"])
+        degisim = float(item["priceChangePercent"])
 
-    print('Tüm test mesajları başarıyla gönderildi!')
+        mesaj = (
+            f"⚡ *SAF API TEST SİNYALİ* ⚡\n\n"
+            f"🪙 *Coin:* `{coin_adi}/USDT`\n"
+            f"💰 *Fiyat:* `{fiyat}`\n"
+            f"📊 *24s Değişim:* `% {degisim}`\n\n"
+            f"Kaptan, engel mangep kalmadı, hatlar tertemiz!"
+        )
+        telegram_mesaj_gonder(mesaj)
+
+    print("Tüm saf API test mesajları başarıyla gönderildi!")
 
   except Exception as e:
     print(f"Hata detayı: {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   hizli_tarama()
