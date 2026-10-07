@@ -2,7 +2,7 @@ import requests
 
 # --- TELEGRAM AYARLARI ---
 TELEGRAM_TOKEN = "8950898533:AAEU-FsEvHt5qUIAzXMwa-hCBWZMTGcDI_Y"
-CHAT_ID = "-1003795173448"
+CHAT_ID = "-1003795173448"  # Eksi (-) işaretli grup ID'si
 
 
 def telegram_mesaj_gonder(mesaj):
@@ -15,36 +15,36 @@ def telegram_mesaj_gonder(mesaj):
 
 
 def hizli_tarama():
-  print("Kaptan, korumalı saf API taraması başlatıldı...")
+  print("Kaptan, engelsiz alternatif tarama başlatıldı...")
   try:
-    url = "https://fapi.binance.com/fapi/v1/ticker/24hr"
+    # CoinGecko'nun hiçbir IP engeli olmayan, dünyaya açık halka açık API'si
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,ripple&vs_currencies=usd&include_24hr_change=true"
     response = requests.get(url, timeout=10)
     data = response.json()
 
-    # Gelen verinin liste olup olmadığını kontrol ediyoruz
-    if not isinstance(data, list):
-      print(f"Beklenmeyen veri formatı: {data}")
-      return
+    # Gelen veriyi işleyip Telegram'a gönderelim
+    coin_map = {
+        "bitcoin": "BTC",
+        "ethereum": "ETH",
+        "solana": "SOL",
+        "ripple": "XRP",
+    }
 
-    hedef_coinler = ["BTCUSDT", "ETHUSDT", "SOLUSDT"]
-
-    for item in data:
-      symbol = item.get("symbol")
-      if symbol in hedef_coinler:
-        coin_adi = symbol.replace("USDT", "")
-        fiyat = float(item.get("lastPrice", 0))
-        degisim = float(item.get("priceChangePercent", 0))
+    for key, coin_adi in coin_map.items():
+      if key in data:
+        fiyat = data[key]["usd"]
+        degisim = round(data[key]["usd_24h_change"], 2)
 
         mesaj = (
-            f"⚡ *KORUMALI SAF API SİNYALİ* ⚡\n\n"
+            f"⚡ *ENGELSİZ HIZLI SİNYAL* ⚡\n\n"
             f"🪙 *Coin:* `{coin_adi}/USDT`\n"
-            f"💰 *Fiyat:* `{fiyat}`\n"
+            f"💰 *Fiyat (USD):* `$ {fiyat}`\n"
             f"📊 *24s Değişim:* `% {degisim}`\n\n"
-            f"Kaptan, veriler tertemiz çekildi, sistem tam gaz!"
+            f"Kaptan, coğrafi engel delindi, mermiler yolda!"
         )
         telegram_mesaj_gonder(mesaj)
 
-    print("Tüm korumalı test mesajları başarıyla gönderildi!")
+    print("Tüm alternatif test mesajları başarıyla gruba gönderildi!")
 
   except Exception as e:
     print(f"Hata detayı: {e}")
